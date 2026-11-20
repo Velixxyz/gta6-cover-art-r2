@@ -1,12 +1,172 @@
-html, body { margin: 0; height: 100%; background: #f2f0f4; color: #1d1b22; font: 15px/1.4 system-ui, sans-serif; }
-.app { display: flex; gap: 32px; align-items: center; justify-content: center; height: 100%; padding: 24px; box-sizing: border-box; }
-.controls { display: flex; flex-direction: column; gap: 14px; width: 280px; }
-.controls h1 { margin: 0; font-size: 28px; }
-.controls p { margin: 0; color: #5c5866; }
-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
-input[type=text] { font: inherit; padding: 8px; border: 1px solid #c9c4d1; border-radius: 6px; }
-button { font: inherit; font-weight: 700; padding: 10px; border: 0; border-radius: 6px; background: #1d1b22; color: #fff; cursor: pointer; }
-canvas { width: min(70vh, 60vw); height: min(70vh, 60vw); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
-body.shot-cover .controls { display: none; }
-body.shot-cover .app { padding: 0; }
-body.shot-cover canvas { width: 100vw; height: 100vh; box-shadow: none; }
+/* Vice City Multi-Panel Studio — editor chrome.
+   Dark studio UI, sunset magenta/orange accents, Anton for display type.
+   The cover itself is drawn on canvas (see src/coverRender.js). */
+
+@font-face {
+  font-family: 'AntonCover';
+  src: url('fonts/Anton-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #0d0a14;
+  color: #f5ead6;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 18px 22px 12px;
+  border-bottom: 2px solid #ff2e88;
+  background: linear-gradient(100deg, #1c0b2e 0%, #3d0f38 55%, #57203a 100%);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-family: 'AntonCover', 'Arial Narrow', sans-serif;
+  font-size: 30px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff3d6;
+  text-shadow: 2px 2px 0 #ff2e88, 4px 4px 0 rgba(0, 0, 0, 0.6);
+}
+
+.topbar h1 span { color: #27e6ff; }
+
+.tagline { margin: 4px 0 0; color: #ffd9a0; }
+
+.offline-badge {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid #27e6ff;
+  border-radius: 999px;
+  color: #27e6ff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 20px;
+  padding: 20px 22px 28px;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+.preview-pane { min-width: 0; }
+
+#coverPreview {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 190px);
+  object-fit: contain;
+  background: #0b0714;
+  border: 1px solid #3a2350;
+  border-radius: 6px;
+  touch-action: none;
+}
+
+.hint, .status { margin: 10px 2px 0; color: #c9b8d6; font-size: 13px; }
+.status { color: #ffd65a; }
+
+.controls { display: flex; flex-direction: column; gap: 16px; }
+
+.control-group {
+  background: #171024;
+  border: 1px solid #3a2350;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.control-group h2 {
+  margin: 0 0 10px;
+  font-family: 'AntonCover', 'Arial Narrow', sans-serif;
+  font-size: 17px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffb347;
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+button {
+  appearance: none;
+  border: 1px solid #5a3a78;
+  background: #241a38;
+  color: #f5ead6;
+  border-radius: 6px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover { border-color: #ff2e88; background: #2e2144; }
+button.active { background: #ff2e88; border-color: #ff2e88; color: #fff; }
+button.primary { background: #ff7a2a; border-color: #ff7a2a; color: #1c0b2e; font-weight: 700; }
+button.primary:hover { background: #ffa04d; }
+
+label { display: block; margin-bottom: 10px; font-weight: 600; }
+label input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 10px;
+  border: 1px solid #5a3a78;
+  border-radius: 6px;
+  background: #0d0a14;
+  color: #fff3d6;
+  font: inherit;
+}
+
+.dropzone {
+  border: 2px dashed #5a3a78;
+  border-radius: 8px;
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  color: #e8d9f5;
+}
+
+.dropzone.drag { border-color: #27e6ff; background: rgba(39, 230, 255, 0.08); }
+
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.thumb { padding: 0; overflow: hidden; width: 72px; height: 72px; }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.muted { color: #a68fb8; font-size: 13px; }
+.fineprint { margin-top: 4px; }
+
+@media (max-width: 900px) {
+  .studio { grid-template-columns: 1fr; }
+  .topbar { flex-direction: column; align-items: flex-start; }
+}
+
+/* Shot mode: the exported cover fills the whole screenshot window. */
+body.shot-cover { background: #0b0714; }
+body.shot-cover .topbar,
+body.shot-cover .controls,
+body.shot-cover .hint,
+body.shot-cover .status { display: none; }
+body.shot-cover .studio { display: block; padding: 0; margin: 0; max-width: none; }
+body.shot-cover .preview-pane { margin: 0; }
+body.shot-cover #coverPreview {
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+}

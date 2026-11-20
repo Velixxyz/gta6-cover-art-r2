@@ -1,23 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cover Snap</title>
-<link rel="stylesheet" href="./style.css">
+<title>Vice City Multi-Panel Studio — GTA 6-style cover maker</title>
+<meta name="description" content="Turn your photo and a caption into a multi-panel Vice City sunset cover, exported as PNG. Offline, free, no upload.">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="app">
-  <section class="controls">
-    <h1>Cover Snap</h1>
-    <p>A photo and a caption, made into a square cover.</p>
-    <label>Photo <input id="photo" type="file" accept="image/*"></label>
-    <label>Caption <input id="caption" type="text" maxlength="40" value="Sunset Heist"></label>
-    <button id="export" type="button">Export PNG 1080 x 1080</button>
-    <p id="status" role="status"></p>
+<header class="topbar">
+  <div>
+    <h1>Vice City <span>Multi-Panel Studio</span></h1>
+    <p class="tagline">Your photo + a caption → a GTA-style poster cover. One photo fills every panel.</p>
+  </div>
+  <p class="offline-badge">100% offline — photos never leave your machine</p>
+</header>
+<main class="studio">
+  <section class="preview-pane" aria-label="Live cover preview">
+    <canvas id="coverPreview" width="1080" height="1080"></canvas>
+    <p class="hint">Click a panel to select it. Drag a panel to pan its photo, scroll to zoom, double-click to reset its crop.</p>
+    <p id="studioStatus" class="status" role="status">Add a photo to start — or load a sample below.</p>
   </section>
-  <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
+  <aside class="controls" aria-label="Cover controls">
+    <section class="control-group">
+      <h2>1 · Photos</h2>
+      <div id="dropZone" class="dropzone" tabindex="0" role="button" aria-label="Add photos">
+        Drop photos here, or click to browse<br><span class="muted">JPG, PNG or WebP · up to 10 · stored only in your browser</span>
+      </div>
+      <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <div class="row">
+        <button type="button" data-sample="pier">Sample: Pier</button>
+        <button type="button" data-sample="boulevard">Sample: Boulevard</button>
+      </div>
+      <div id="photoThumbs" class="thumbs"></div>
+      <p class="muted">Click a thumbnail to put that photo in the selected panel.</p>
+      <div class="row">
+        <button type="button" id="useAllBtn">One photo in all panels</button>
+      </div>
+    </section>
+    <section class="control-group">
+      <h2>2 · Layout</h2>
+      <div class="grid-buttons">
+        <button type="button" data-layout="classic">Classic Vice</button>
+        <button type="button" data-layout="duo">Duo Story</button>
+        <button type="button" data-layout="nights">City Nights</button>
+        <button type="button" data-layout="action">Action Grid</button>
+        <button type="button" data-layout="sunset">Sunset Edition</button>
+        <button type="button" data-layout="minimal">Minimal Crime</button>
+      </div>
+    </section>
+    <section class="control-group">
+      <h2>3 · Grade</h2>
+      <div class="grid-buttons">
+        <button type="button" data-grade="sunset">Vice City Sunset</button>
+        <button type="button" data-grade="neon">Neon Nights</button>
+        <button type="button" data-grade="tropical">Tropical Heat</button>
+        <button type="button" data-grade="crime">Crime Drama</button>
+      </div>
+    </section>
+    <section class="control-group">
+      <h2>4 · Caption</h2>
+      <label>Title <span class="muted">(max 24 characters)</span>
+        <input id="captionTitle" type="text" maxlength="24" value="Sunset Heist" autocomplete="off">
+      </label>
+      <label>Subtitle <span class="muted">(max 45 characters)</span>
+        <input id="captionSub" type="text" maxlength="45" value="Vice City Nights" autocomplete="off">
+      </label>
+      <label>Micro detail
+        <input id="captionMicro" type="text" maxlength="60" value="Ocean Drive • Leonida • 2026" autocomplete="off">
+      </label>
+      <div class="row">
+        <button type="button" data-pos="bottom">Caption: bottom</button>
+        <button type="button" data-pos="top">Caption: top</button>
+        <button type="button" data-pos="center">Caption: centre</button>
+      </div>
+    </section>
+    <section class="control-group">
+      <h2>5 · Selected panel crop</h2>
+      <div class="row">
+        <button type="button" id="zoomInBtn">Zoom +</button>
+        <button type="button" id="zoomOutBtn">Zoom −</button>
+        <button type="button" id="flipBtn">Flip</button>
+        <button type="button" id="resetCropBtn">Reset crop</button>
+      </div>
+    </section>
+    <section class="control-group">
+      <h2>6 · Export PNG</h2>
+      <div class="grid-buttons">
+        <button type="button" data-size="1080x1080">1080 × 1080</button>
+        <button type="button" data-size="1080x1350">1080 × 1350</button>
+        <button type="button" data-size="1920x1080">1920 × 1080</button>
+      </div>
+      <div class="row">
+        <button type="button" id="exportBtn" class="primary">Export PNG</button>
+        <button type="button" id="exportAllBtn">Export all sizes</button>
+      </div>
+      <div class="row">
+        <button type="button" id="undoBtn">Undo</button>
+        <button type="button" id="redoBtn">Redo</button>
+        <button type="button" id="resetBtn">Reset design</button>
+      </div>
+    </section>
+    <p class="muted fineprint">Original art drawn in code — sunset gradients, skyline and palm
+    silhouettes, neon accents. No Rockstar logo, artwork, character or font.
+    Display face: Anton (SIL Open Font License, bundled under fonts/).
+    Built for the make.fun GTA 6 cover art bounty.</p>
+  </aside>
 </main>
-<script type="module" src="./src/main.js"></script>
+<script type="module" src="src/shots.js"></script>
 </body>
 </html>
