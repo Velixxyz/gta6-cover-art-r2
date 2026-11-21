@@ -1,41 +1,27 @@
-// Screenshot scenes (?shot=...). Reads the scene from the URL, loads the
-// sample photo, applies the layout/grade/caption, waits for the Anton font,
-// then marks the page ready for the headless screenshot run.
-import { loadSampleAsync, setSceneFields, renderCoverScene } from "./studio.js";
+// Fixed scenes for screenshots: ?shot=cover draws the cover alone, full-frame;
+// ?shot=editor shows the editor with a sample photo loaded. `photo` picks the
+// sample (samples/<photo>.jpg), `caption` the title words, `grade` and
+// `layout` optionally pick the grade and layout. window.__shotReady is set
+// once the scene has painted, after the Anton font has actually loaded.
 
-async function run() {
-  const params = new URLSearchParams(location.search);
-  const shot = params.get("shot") || "cover";
-  const scene = {
-    photo: params.get("photo") || "pier.jpg",
-    layout: params.get("layout") || "classic",
-    grade: params.get("grade") || "sunset",
-    title: params.get("title") || "Sunset Heist",
-    subtitle: params.get("subtitle") || "Vice City Nights",
-    micro: params.get("micro") || "Welcome to Leonida",
-    position: params.get("pos") || "bottom",
-  };
-
-  try { await document.fonts.load('100px AntonCover'); } catch (e) { /* fall back */ }
-  try { await document.fonts.ready; } catch (e) { /* fall back */ }
-
-  await loadSampleAsync(scene.photo);
-  setSceneFields({
-    layout: scene.layout,
-    grade: scene.grade,
-    title: scene.title,
-    subtitle: scene.subtitle,
-    micro: scene.micro,
-    position: scene.position,
-    selectedPanel: 0,
-  });
-
-  if (shot === "cover") {
-    document.body.classList.add("shot-cover");
-    renderCoverScene(window.innerWidth, window.innerHeight);
+export async function runShot(shot, query, api) {
+  if (shot === 'cover') document.body.classList.add('shot-cover');
+  if (shot === 'editor') {
+    document.body.classList.add('shot-editor');
+    api.setPreviewSize('wide');
   }
-
+  try {
+    await document.fonts.load('100px AntonCover');
+    await document.fonts.ready;
+  } catch (e) {
+    // Fall back to the system sans: the cover still renders.
+  }
+  const photo = query.get('photo') ?? 'pier';
+  const caption = query.get('caption') ?? 'Sunset Heist';
+  const extra = {};
+  if (query.get('grade')) extra.grade = query.get('grade');
+  if (query.get('layout')) extra.layout = query.get('layout');
+  await api.loadSample(photo, caption, extra);
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   window.__shotReady = true;
 }
-
-run();
