@@ -1,72 +1,82 @@
-// Vice City Multi-Panel Studio — entry program (Node 22, standard library only).
-// Hands the app in: copies app/ and screenshots/ from beside this file to
-// /output (or MAKEFUN_OUTPUT_DIR outside the grader) and writes
-// /output/dossier.json with the vendored make.fun library. Runs twice and
-// must write the same bytes both times, so nothing here depends on the clock,
-// randomness, or the order the filesystem happens to list files in.
-//
-// Serve the app locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// main.ts — Vice City Multi-Panel Studio entry point.
+// Standard-library-only Node: copies app/ and screenshots/ to the output
+// directory and writes dossier.json via buildDossier from the vendor module.
 
-import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { buildDossier } from './vendor/makefun-app.ts';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+const REPO = resolve(import.meta.dirname);
+const OUT = process.env.MAKEFUN_OUTPUT_DIR
+  ? resolve(process.env.MAKEFUN_OUTPUT_DIR)
+  : resolve(REPO, 'out');
 
-// Count the plain files under a directory, following the scorer's caps, so a
-// broken tree fails loudly here instead of silently shipping a bad entry.
-function countTree(dir, seen = { files: 0, bytes: 0 }) {
-  for (const name of readdirSync(dir, { withFileTypes: true })) {
-    const path = join(dir, name.name);
-    if (name.isDirectory()) countTree(path, seen);
-    else if (name.isFile()) {
-      seen.files += 1;
-      seen.bytes += statSync(path).size;
+const APP_MAX_FILES = 993;
+const APP_MAX_BYTES = 48 * 1024 * 1024;
+const SHOT_MAX_BYTES = 256 * 1024;
+const DOSSIER_MAX_BYTES = 1536 * 1024;
+
+function walk(dir: string, base: string, acc: string[]): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    const rel = base ? base + '/' + entry.name : entry.name;
+    if (entry.isDirectory()) walk(full, rel, acc);
+    else acc.push(rel);
+  }
+  return acc;
+}
+
+function byteSizeOf(dir: string): number {
+  let total = 0;
+  for (const rel of walk(dir, '', [])) total += statSync(join(dir, rel)).size;
+  return total;
+}
+
+function preflight(): void {
+  const appDir = join(REPO, 'app');
+  const shotDir = join(REPO, 'screenshots');
+  if (!existsSync(appDir)) throw new Error('missing app/ directory');
+  const appFiles = walk(appDir, '', []);
+  if (appFiles.length > APP_MAX_FILES) {
+    throw new Error(`app/ has ${appFiles.length} files, cap is ${APP_MAX_FILES}`);
+  }
+  const appBytes = byteSizeOf(appDir);
+  if (appBytes > APP_MAX_BYTES) {
+    throw new Error(`app/ is ${appBytes} bytes, cap is ${APP_MAX_BYTES}`);
+  }
+  if (!existsSync(shotDir)) throw new Error('missing screenshots/ directory');
+  const shots = readdirSync(shotDir).filter((n) => /\.(jpe?g|png)$/i.test(n)).sort();
+  if (shots.length < 3 || shots.length > 4) {
+    throw new Error(`expected 3-4 screenshots, found ${shots.length}`);
+  }
+  for (const name of shots) {
+    const size = statSync(join(shotDir, name)).size;
+    if (size > SHOT_MAX_BYTES) {
+      throw new Error(`screenshot ${name} is ${size} bytes, cap is ${SHOT_MAX_BYTES}`);
     }
   }
-  return seen;
 }
 
-const appTree = countTree(join(here, 'app'));
-if (appTree.files > 993) throw new Error(`app/ holds ${appTree.files} files, over the 993 cap`);
-if (appTree.bytes > 48 * 1024 * 1024) throw new Error(`app/ holds ${appTree.bytes} bytes, over the 48 MiB cap`);
-
-mkdirSync(out, { recursive: true });
-cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
-const shots = existsSync(join(here, 'screenshots'))
-  ? readdirSync(join(here, 'screenshots')).filter((n) => !n.startsWith('.'))
-  : [];
-if (shots.length < 3 || shots.length > 4) {
-  throw new Error(`screenshots/ holds ${shots.length} images, need 3 or 4`);
-}
-// The scorer refuses any screenshot over 256 KiB, so refuse it here too.
-for (const name of shots) {
-  const size = statSync(join(here, 'screenshots', name)).size;
-  if (size > 262144) throw new Error(`screenshots/${name} is ${size} bytes, over the 256 KiB cap`);
-}
-cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
-
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the
-// bytes; the others refuse an entry the scorer would refuse (more than 4
-// screenshots or one over 256 KiB; more than 993 files in app/ or 48 MiB of
-// app files, in all, or a path under app/ over 1000 bytes: app/ counts beside
-// /output's own 1000-entry cap, its screenshots/ and dossier.json).
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
+function main(): void {
+  preflight();
+  mkdirSync(OUT, { recursive: true });
+  cpSync(join(REPO, 'app'), join(OUT, 'app'), { recursive: true });
+  cpSync(join(REPO, 'screenshots'), join(OUT, 'screenshots'), { recursive: true });
+  const dossier = buildDossier(REPO, {
     text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: 262144 },
-    app_max_files: 993,
-    app_max_bytes: 50331648,
-    app_path_max_bytes: 1000,
-  }),
-);
+    screenshots: { max: 4, max_bytes: SHOT_MAX_BYTES },
+    app_max_files: APP_MAX_FILES,
+    app_max_bytes: APP_MAX_BYTES,
+  });
+  if (dossier.length > DOSSIER_MAX_BYTES) {
+    throw new Error('dossier.json exceeds its 1.5 MiB cap');
+  }
+  // buildDossier already returns canonical JSON bytes; write them as-is.
+  writeFileSync(join(OUT, 'dossier.json'), dossier);
+  const appFiles = walk(join(OUT, 'app'), '', []);
+  const shotFiles = readdirSync(join(OUT, 'screenshots')).length;
+  console.log(`handed in ${appFiles.length} app files (${byteSizeOf(join(OUT, 'app'))} bytes) and ${shotFiles} screenshots`);
+  console.log(`dossier written to ${join(OUT, 'dossier.json')}`);
+}
 
-console.log(
-  `handed in ${appTree.files} app files (${appTree.bytes} bytes) and ${shots.length} screenshots`,
-);
+main();
