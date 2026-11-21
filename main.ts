@@ -1,82 +1,87 @@
-// main.ts — Vice City Multi-Panel Studio entry point.
-// Standard-library-only Node: copies app/ and screenshots/ to the output
-// directory and writes dossier.json via buildDossier from the vendor module.
-
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+// Vice City Multi-Panel Studio — entry build program (Node, standard library only).
+// Copies app/ and screenshots/ beside this file into the output directory and
+// writes dossier.json there with the vendored make.fun library.
+// Run: MAKEFUN_OUTPUT_DIR=out node main.ts   (defaults to /output in the grader)
+import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
 
-const REPO = resolve(import.meta.dirname);
-const OUT = process.env.MAKEFUN_OUTPUT_DIR
-  ? resolve(process.env.MAKEFUN_OUTPUT_DIR)
-  : resolve(REPO, 'out');
+const here = fileURLToPath(new URL('.', import.meta.url));
+const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-const APP_MAX_FILES = 993;
-const APP_MAX_BYTES = 48 * 1024 * 1024;
-const SHOT_MAX_BYTES = 256 * 1024;
-const DOSSIER_MAX_BYTES = 1536 * 1024;
+// Scorer caps from the bounty's gate: 4 screenshots max, 256 KiB each;
+// app/ at most 993 files / 48 MiB total, paths under 1000 bytes.
+const CAPS = {
+  text_max_bytes: 163840,
+  screenshots: { max: 4, max_bytes: 262144 },
+  app_max_files: 993,
+  app_max_bytes: 50331648,
+  app_path_max_bytes: 1000,
+};
 
-function walk(dir: string, base: string, acc: string[]): string[] {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    const rel = base ? base + '/' + entry.name : entry.name;
-    if (entry.isDirectory()) walk(full, rel, acc);
-    else acc.push(rel);
+function walk(dir, rel) {
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const p = join(dir, entry.name);
+    const r = rel ? rel + '/' + entry.name : entry.name;
+    if (entry.isDirectory()) found.push(...walk(p, r));
+    else if (entry.isFile()) found.push({ path: p, rel: r, bytes: statSync(p).size });
   }
-  return acc;
+  return found;
 }
 
-function byteSizeOf(dir: string): number {
-  let total = 0;
-  for (const rel of walk(dir, '', [])) total += statSync(join(dir, rel)).size;
-  return total;
-}
+function preflight() {
+  const appDir = join(here, 'app');
+  if (!existsSync(appDir) || !statSync(appDir).isDirectory()) {
+    throw new Error('preflight: app/ is missing — nothing to hand in');
+  }
+  const appFiles = walk(appDir, '');
+  const appBytes = appFiles.reduce((n, f) => n + f.bytes, 0);
+  if (appFiles.length > CAPS.app_max_files) {
+    throw new Error(`preflight: app/ holds ${appFiles.length} files, over the ${CAPS.app_max_files} cap`);
+  }
+  if (appBytes > CAPS.app_max_bytes) {
+    throw new Error(`preflight: app/ holds ${appBytes} bytes, over the ${CAPS.app_max_bytes} cap`);
+  }
+  const long = appFiles.find((f) => Buffer.byteLength('app/' + f.rel) > CAPS.app_path_max_bytes);
+  if (long) throw new Error(`preflight: app path too long: app/${long.rel}`);
 
-function preflight(): void {
-  const appDir = join(REPO, 'app');
-  const shotDir = join(REPO, 'screenshots');
-  if (!existsSync(appDir)) throw new Error('missing app/ directory');
-  const appFiles = walk(appDir, '', []);
-  if (appFiles.length > APP_MAX_FILES) {
-    throw new Error(`app/ has ${appFiles.length} files, cap is ${APP_MAX_FILES}`);
+  const shotsDir = join(here, 'screenshots');
+  const shots = existsSync(shotsDir) ? walk(shotsDir, '').filter((f) => /\.(jpe?g|png)$/i.test(f.rel)) : [];
+  if (shots.length < 3 || shots.length > CAPS.screenshots.max) {
+    throw new Error(`preflight: ${shots.length} screenshots, need 3–${CAPS.screenshots.max}`);
   }
-  const appBytes = byteSizeOf(appDir);
-  if (appBytes > APP_MAX_BYTES) {
-    throw new Error(`app/ is ${appBytes} bytes, cap is ${APP_MAX_BYTES}`);
-  }
-  if (!existsSync(shotDir)) throw new Error('missing screenshots/ directory');
-  const shots = readdirSync(shotDir).filter((n) => /\.(jpe?g|png)$/i.test(n)).sort();
-  if (shots.length < 3 || shots.length > 4) {
-    throw new Error(`expected 3-4 screenshots, found ${shots.length}`);
-  }
-  for (const name of shots) {
-    const size = statSync(join(shotDir, name)).size;
-    if (size > SHOT_MAX_BYTES) {
-      throw new Error(`screenshot ${name} is ${size} bytes, cap is ${SHOT_MAX_BYTES}`);
+  for (const s of shots) {
+    if (s.bytes > CAPS.screenshots.max_bytes) {
+      throw new Error(`preflight: screenshot ${s.rel} is ${s.bytes} bytes, over 256 KiB`);
     }
   }
+  return { appFiles: appFiles.length, appBytes, shots: shots.length };
 }
 
-function main(): void {
-  preflight();
-  mkdirSync(OUT, { recursive: true });
-  cpSync(join(REPO, 'app'), join(OUT, 'app'), { recursive: true });
-  cpSync(join(REPO, 'screenshots'), join(OUT, 'screenshots'), { recursive: true });
-  const dossier = buildDossier(REPO, {
-    text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: SHOT_MAX_BYTES },
-    app_max_files: APP_MAX_FILES,
-    app_max_bytes: APP_MAX_BYTES,
-  });
-  if (dossier.length > DOSSIER_MAX_BYTES) {
-    throw new Error('dossier.json exceeds its 1.5 MiB cap');
-  }
-  // buildDossier already returns canonical JSON bytes; write them as-is.
-  writeFileSync(join(OUT, 'dossier.json'), dossier);
-  const appFiles = walk(join(OUT, 'app'), '', []);
-  const shotFiles = readdirSync(join(OUT, 'screenshots')).length;
-  console.log(`handed in ${appFiles.length} app files (${byteSizeOf(join(OUT, 'app'))} bytes) and ${shotFiles} screenshots`);
-  console.log(`dossier written to ${join(OUT, 'dossier.json')}`);
+const check = preflight();
+
+mkdirSync(out, { recursive: true });
+cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
+mkdirSync(join(out, 'screenshots'), { recursive: true });
+if (existsSync(join(here, 'screenshots'))) {
+  cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
 }
 
-main();
+// buildDossier returns canonical JSON bytes; write them raw, untouched.
+const dossier = buildDossier(out, CAPS);
+writeFileSync(join(out, 'dossier.json'), dossier);
+if (dossier.length > 4 * 1024 * 1024) {
+  throw new Error(`dossier is ${dossier.length} bytes, over the 4 MiB limit`);
+}
+
+// Self-check: the hand-in must mirror the source exactly.
+const outApp = walk(join(out, 'app'), '');
+const outBytes = outApp.reduce((n, f) => n + f.bytes, 0);
+if (outApp.length !== check.appFiles || outBytes !== check.appBytes) {
+  throw new Error(`hand-in mismatch: ${outApp.length} files / ${outBytes} bytes in output vs ${check.appFiles} / ${check.appBytes} in source`);
+}
+
+console.log(`handed in ${check.appFiles} app files (${check.appBytes} bytes) and ${check.shots} screenshots`);
+console.log(`dossier written to ${join(out, 'dossier.json')} (${dossier.length} bytes)`);

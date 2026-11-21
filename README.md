@@ -7,23 +7,25 @@
 [![reward](https://make.fun/badge/gta6-cover-art-01/Velixxyz/gta6-cover-art-r2/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
 A multi-panel GTA-style cover maker that runs entirely in the browser. Drop in
-your own photos, pick a layout and a colour grade, write a punchy caption, and
-export a poster-ready PNG.
+your own photos, pick a layout and a colour grade, set the caption, and export a
+poster-ready PNG — no upload, no account, no network.
 
 ## What it does
 
-- Six comic-panel layouts: Classic Vice, Duo Story, City Nights, Action Grid,
-  Sunset Edition, Minimal Crime.
-- Four one-click grades: Vice City Sunset, Neon Nights, Tropical Heat, Crime Drama.
-- One to ten local photos with drag-drop and thumbnails; one photo can fill
-  every panel.
-- Per-panel crop: click a panel, drag to pan, scroll to zoom, flip, reset, or
-  double-click to reset. Photos always cover-fit, never stretch.
-- Captions with big Anton lettering, outline and shadow, auto-fit, plus a
-  subtitle and a micro line, placed at the bottom, top, or middle.
-- Procedural city skyline and palm silhouettes with seeded deterministic film
-  grain, drawn over every cover.
-- Export PNG at 1080×1080, 1080×1350, 1920×1080, or all three sizes at once.
+- **6 layouts** — Classic Vice, Duo Story, City Nights, Action Grid, Sunset
+  Edition, Minimal Crime. One photo can fill every panel, or each panel can
+  carry its own.
+- **4 grades** — Vice City Sunset, Neon Nights, Tropical Heat, Crime Drama.
+  One global tint washes across the whole cover.
+- **1–10 local photos** — file picker or drag-and-drop, with thumbnails. Every
+  panel crops cover-fit, never stretched: click a panel to select it, drag to
+  pan, scroll to zoom, flip it, double-click to reset.
+- **Caption** — a bold Anton title (outline plus shadow, auto-fit, max 24
+  characters), a subtitle (max 45), and a micro line, placed bottom, top or
+  middle over a scrim.
+- **Artwork** — a procedural city skyline with lit windows, palm silhouettes
+  and seeded film grain, drawn fresh for every cover.
+- **Export** — PNG at 1080×1080, 1080×1350 or 1920×1080, or all three at once.
   The editor preview uses the exact same renderer as the export.
 
 ## Run it
@@ -32,8 +34,8 @@ export a poster-ready PNG.
 node serve.ts
 ```
 
-Then open <http://localhost:8080> in a browser. Everything runs locally;
-the app loads no network resources at all.
+Then open <http://localhost:8080> in a browser. Everything runs locally; the
+app loads no network resources at all.
 
 ## Build the entry
 
