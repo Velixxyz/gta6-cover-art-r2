@@ -1,37 +1,52 @@
 # Vice City Multi-Panel Studio
 
-[![gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
-[![rank](https://make.fun/badge/gta6-cover-art-01/Velixxyz/gta6-cover-art-r2/rank.svg)](https://make.fun/bounty/gta6-cover-art-01)
-[![reward](https://make.fun/badge/gta6-cover-art-01/Velixxyz/gta6-cover-art-r2/reward.svg)](https://make.fun/bounty/gta6-cover-art-01)
+![gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)
+![rank](https://make.fun/badge/gta6-cover-art-01/Velixxyz/gta6-cover-art-r2/rank.svg)
+![reward](https://make.fun/badge/gta6-cover-art-01/Velixxyz/gta6-cover-art-r2/reward.svg)
 
-Turn your own photos into a postable GTA-style multi-panel cover in a few steps.
+A web app that turns your photos into GTA-style multi-panel poster cover art,
+in the spirit of the Vice City sunset and neon posters. Everything runs offline
+in the browser: photos never leave your machine.
 
-## How it works
+## What it does
 
-1. **Drop your photos** (1–10, they never leave your browser) or try a sample.
-2. **Pick a layout** — six presets: Classic Vice, Duo Story, City Nights, Action Grid, Sunset Edition, Minimal Crime.
-3. **Pick a grade** — Vice City Sunset, Neon Nights, Tropical Heat, Crime Drama. One tint covers the whole cover so the panels read as one image.
-4. **Crop each panel** — click a panel to select it, drag to move the photo, scroll to zoom, double-click to reset, or flip it. One photo can fill every panel.
-5. **Write the caption** — bold Anton title (auto-fits), subtitle and micro line, top / center / bottom.
-6. **Export PNG** — 1080×1080, 1080×1350, 1920×1080, or all three at once.
+- **Any photo, any panel** — add 1–10 photos from your machine (or drop them on
+  the preview). One photo can fill every panel, or each panel can hold its own.
+- **Crop per panel** — click a panel to select it, drag to pan, scroll to zoom,
+  flip it, or double-click to reset the crop. Cover-fit, never stretched.
+- **6 layouts** — Classic Vice, Duo Story, City Nights, Action Grid, Sunset
+  Edition, Minimal Crime.
+- **4 grades** — Vice City Sunset, Neon Nights, Tropical Heat, Crime Drama: one
+  global tint across all panels.
+- **Bold caption lettering** — a title (max 24 characters) in Anton with outline
+  and shadow, a subtitle (max 45), and a micro line, placed at the bottom, top,
+  or middle over a scrim.
+- **Procedural art** — a generated city skyline with lit windows, palm
+  silhouettes, and seeded deterministic film grain on every cover.
+- **Export PNG** — 1080 × 1080, 1080 × 1350, 1920 × 1080, or all three at once.
+  The preview and the export use the same renderer, so what you see is what
+  the PNG holds.
+- **Undo / redo / reset** — every edit is on the history stack.
 
-The preview and the export share one renderer (`app/src/coverRender.js`), so the PNG matches exactly what you see. The cover also gets a procedural city skyline with lit windows, palm silhouettes and seeded film grain.
-
-## Run it
+## Try it
 
 ```sh
 node serve.ts
 # open http://localhost:8080
 ```
 
-## Build the entry
+## Hand it in
 
 ```sh
-MAKEFUN_OUTPUT_DIR=out node main.ts
+mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+node ../kit27/gta6-cover-art-01-kit/cli/makefun.mjs check --kit ../kit27/gta6-cover-art-01-kit --repo .
 ```
 
-`main.ts` is stdlib-only Node 22: it copies `app/` and `screenshots/` to the output directory and writes `dossier.json` (makefun/dossier/v1) with the four screenshots, cover first.
+## Credits
 
-## Fonts
-
-Anton Regular (SIL Open Font License 1.1) is bundled in `app/fonts/` with its license text. No Rockstar logo, wordmark, artwork or font is used anywhere.
+- Samples `app/samples/pier.jpg` and `app/samples/boulevard.jpg` were made with
+  an image model for this entry.
+- Font: Anton by the Anton Project Authors, licensed under the SIL Open Font
+  License 1.1 — see `app/fonts/OFL.txt`.
+- No Rockstar Games logo, wordmark, artwork, or font is used anywhere.
+- License: MIT — see `LICENSE`.
