@@ -7,116 +7,212 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
-body {
-  background: #12081f;
-  color: #f3eefc;
-  font-family: Arial, Helvetica, sans-serif;
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #14082a;
+  color: #f2ecff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #1c0b38;
+  border-bottom: 1px solid #3a1d63;
+}
+
+.brand {
+  font-family: 'AntonCover', 'Arial Narrow', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.logo {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff2e88, #ff7e2a);
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 9px;
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.top-actions button,
+.panel button {
+  background: #2a1450;
+  color: #f2ecff;
+  border: 1px solid #5b3a8c;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
   font-size: 14px;
 }
 
-#app { max-width: 1480px; margin: 0 auto; padding: 12px 16px 24px; }
+.top-actions button:hover,
+.panel button:hover { background: #3a1d63; }
+.top-actions button:disabled { opacity: 0.4; cursor: default; }
 
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 6px 0 14px;
+.panel button.active {
+  background: #ff2e88;
+  border-color: #ff2e88;
+  color: #fff;
 }
-.brand { display: flex; align-items: center; gap: 10px; }
-.logo {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: 10px;
-  background: linear-gradient(135deg, #ff5e3a, #b537f2);
-  font-family: 'AntonCover', 'Arial Black', sans-serif;
-  font-size: 20px; color: #fff; letter-spacing: 1px;
-}
-.brand h1 {
-  font-family: 'AntonCover', 'Arial Black', sans-serif;
-  font-weight: 400; font-size: 22px; letter-spacing: 2px;
-  margin: 0; color: #fff;
-}
-.top-actions { display: flex; gap: 8px; }
 
-.layout { display: flex; gap: 16px; align-items: flex-start; }
-.preview-wrap { flex: 1 1 auto; min-width: 0; }
-.preview-wrap.over { outline: 2px dashed #ff7a18; outline-offset: 4px; }
-#preview {
-  display: block; width: 100%; height: auto;
-  background: #1c0b26; border-radius: 12px;
-  border: 1px solid #3b2352; cursor: crosshair;
+button.primary {
+  background: #ff2e88;
+  border-color: #ff2e88;
+  color: #fff;
 }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  padding: 16px 20px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.preview-col { min-width: 0; }
+
+.canvas-wrap {
+  background: #0a0416;
+  border: 1px solid #3a1d63;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.canvas-wrap.over { outline: 2px dashed #ffd23f; outline-offset: -6px; }
+
+#previewCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: grab;
+}
+
+#previewCanvas:active { cursor: grabbing; }
+
 .preview-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; padding: 10px 2px 0; color: #c9b8e0; font-size: 13px;
-}
-.preview-bar select {
-  background: #241233; color: #f3eefc; border: 1px solid #4b2f6b;
-  border-radius: 8px; padding: 6px 8px; font-size: 13px;
-}
-#shotStrip {
-  margin-top: 10px; padding: 10px 14px; border-radius: 8px;
-  background: #241233; border: 1px solid #4b2f6b;
-  font-family: 'AntonCover', sans-serif; font-size: 18px; letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+  font-size: 14px;
 }
 
-.side { flex: 0 0 340px; display: flex; flex-direction: column; gap: 12px; }
-.card {
-  background: #1e0f31; border: 1px solid #3b2352; border-radius: 12px;
+.preview-bar select,
+.panel input[type="text"] {
+  background: #241040;
+  color: #f2ecff;
+  border: 1px solid #5b3a8c;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 14px;
+}
+
+.panel-label { color: #cbb8ea; }
+
+.caption-preview {
+  font-family: 'AntonCover', 'Arial Narrow', sans-serif;
+  letter-spacing: 1px;
+  background: #1c0b38;
+  border: 1px solid #3a1d63;
+  border-radius: 10px;
   padding: 12px 14px;
+  font-size: 17px;
 }
-.card h2 {
-  font-family: 'AntonCover', 'Arial Black', sans-serif;
-  font-weight: 400; font-size: 15px; letter-spacing: 2px;
-  margin: 0 0 10px; color: #ffd166;
-}
-.card label { display: block; margin: 8px 0; color: #d9cdf0; font-size: 13px; }
-.card label .max { float: right; color: #8d7aa8; font-size: 11px; }
-.card input[type="text"] {
-  width: 100%; margin-top: 4px; padding: 8px 10px;
-  background: #160a24; color: #fff; border: 1px solid #4b2f6b;
-  border-radius: 8px; font-size: 13px;
-}
-.card input[type="text"]:focus { outline: 2px solid #ff7a18; }
 
-button {
-  background: #2a1745; color: #f3eefc; border: 1px solid #4b2f6b;
-  border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
-}
-button:hover { border-color: #ff7a18; }
-button:disabled { opacity: 0.4; cursor: default; }
-button.accent {
-  background: linear-gradient(135deg, #ff5e3a, #e84393);
-  border: none; font-weight: 700; color: #fff;
-}
-button.on { border-color: #39d0ff; background: #12324a; color: #bfefff; }
-.row { display: flex; align-items: center; gap: 10px; }
-.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.hint { color: #9d8ab8; font-size: 12px; line-height: 1.5; margin: 8px 0; }
-#photoCount { color: #9d8ab8; font-size: 12px; }
+.controls { display: flex; flex-direction: column; gap: 14px; }
 
-.thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.panel {
+  background: #1c0b38;
+  border: 1px solid #3a1d63;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: #ffd23f;
+}
+
+.panel label {
+  display: block;
+  font-size: 13px;
+  color: #cbb8ea;
+  margin-bottom: 8px;
+}
+
+.panel input[type="text"] { width: 100%; margin-top: 4px; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.crop-row { display: flex; gap: 8px; margin-top: 10px; }
+.crop-row button { flex: 1; }
+
+.hint { font-size: 12.5px; color: #a98fd0; line-height: 1.5; }
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
 .thumb {
-  width: 74px; cursor: pointer; border: 2px solid transparent;
-  border-radius: 8px; overflow: hidden; background: #160a24;
+  width: 76px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0416;
 }
-.thumb.active { border-color: #39d0ff; }
+
+.thumb.active { border-color: #ffd23f; }
+
 .thumb img { display: block; width: 100%; height: 52px; object-fit: cover; }
+
 .thumb span {
-  display: block; padding: 3px 4px; font-size: 10px; color: #c9b8e0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+  font-size: 11px;
+  padding: 3px 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Screenshot modes: full-frame cover, compact editor. */
-body.shot-cover { background: #160a20; }
-body.shot-cover #app { max-width: none; padding: 0; }
-body.shot-cover .topbar, body.shot-cover .side, body.shot-cover .preview-bar { display: none; }
-body.shot-cover .layout { display: block; }
-body.shot-cover #preview { border: none; border-radius: 0; width: 100vw; height: 100vh; object-fit: cover; }
+#photoCount { color: #cbb8ea; font-size: 13px; margin-left: 8px; }
 
-body.shot-editor #app { max-width: none; }
-body.shot-editor .side { flex-basis: 320px; }
+/* Shot mode: the cover scene fills the whole frame, no editor chrome. */
+body.shot-cover { background: #000; }
+body.shot-cover .topbar,
+body.shot-cover .preview-bar,
+body.shot-cover .caption-preview,
+body.shot-cover .controls { display: none; }
+body.shot-cover .layout { display: block; padding: 0; margin: 0; max-width: none; }
+body.shot-cover .canvas-wrap { border: 0; border-radius: 0; }
+body.shot-cover #previewCanvas { width: 100vw; height: 100vh; object-fit: cover; }
 
 @media (max-width: 900px) {
-  .layout { flex-direction: column; }
-  .side { flex: 1 1 auto; width: 100%; }
-  .brand h1 { font-size: 16px; }
+  .layout { grid-template-columns: 1fr; }
 }

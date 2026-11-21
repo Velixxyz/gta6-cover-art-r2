@@ -7,107 +7,101 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="app">
-  <header class="topbar">
-    <div class="brand"><span class="logo">VC</span><h1>VICE CITY MULTI-PANEL STUDIO</h1></div>
-    <div class="top-actions">
-      <button id="undoBtn" type="button" disabled>Undo</button>
-      <button id="redoBtn" type="button" disabled>Redo</button>
-      <button id="resetBtn" type="button">Reset</button>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="brand"><span class="logo">VC</span> VICE CITY MULTI-PANEL STUDIO</div>
+  <div class="top-actions">
+    <button id="undoBtn" type="button">Undo</button>
+    <button id="redoBtn" type="button">Redo</button>
+    <button id="resetBtn" type="button">Reset</button>
+  </div>
+</header>
 
-  <main class="layout">
-    <section class="preview-wrap" id="dropZone">
-      <canvas id="preview" width="1280" height="720"></canvas>
-      <div class="preview-bar">
-        <label>Preview size
-          <select id="sizeSelect">
-            <option value="1280x720" selected>1280 × 720 wide</option>
-            <option value="1080x1080">1080 × 1080 square</option>
-            <option value="1080x1350">1080 × 1350 portrait</option>
-            <option value="1920x1080">1920 × 1080 wide</option>
-          </select>
-        </label>
-        <span id="panelLabel">Panel 1 of 4</span>
-      </div>
-      <div id="shotStrip" style="display:none"></div>
+<main class="layout">
+  <section class="preview-col">
+    <div class="canvas-wrap" id="dropZone">
+      <canvas id="previewCanvas" width="1280" height="720"></canvas>
+    </div>
+    <div class="preview-bar">
+      <label>Preview size
+        <select id="sizeSelect">
+          <option value="1280x720" selected>1280 × 720 wide</option>
+          <option value="1080x1080">1080 × 1080 square</option>
+          <option value="1024x1280">1024 × 1280 portrait</option>
+        </select>
+      </label>
+      <span id="panelLabel" class="panel-label">Panel 1 of 3 — no photo</span>
+    </div>
+    <div class="caption-preview" id="captionPreview">SUNSET HEIST — A Vice City story in four panels</div>
+  </section>
+
+  <aside class="controls">
+    <section class="panel">
+      <h2>1 · Photos</h2>
+      <button id="addPhotosBtn" class="primary" type="button">Add photos</button>
+      <span id="photoCount">0 / 10</span>
+      <input id="fileInput" type="file" accept="image/*" multiple hidden>
+      <div id="thumbList" class="thumbs"></div>
+      <p class="hint">Drop images onto the preview, or click a thumbnail to use that photo. One photo fills every panel.</p>
+      <button id="fillAllBtn" type="button">Fill all panels</button>
     </section>
 
-    <aside class="side">
-      <section class="card">
-        <h2>1 · Photos</h2>
-        <div class="row">
-          <button id="addPhotos" type="button" class="accent">Add photos</button>
-          <span id="photoCount">0 / 10</span>
-        </div>
-        <input id="fileInput" type="file" accept="image/*" multiple hidden>
-        <div id="thumbs" class="thumbs"></div>
-        <p class="hint">Drop images onto the preview, or click a thumbnail to use that photo. One photo fills every panel.</p>
-        <button id="fillAll" type="button">Fill all panels</button>
-      </section>
+    <section class="panel">
+      <h2>2 · Layout</h2>
+      <div class="grid2">
+        <button data-layout="classic" type="button">Classic Vice</button>
+        <button data-layout="duo" type="button">Duo Story</button>
+        <button data-layout="city" type="button">City Nights</button>
+        <button data-layout="grid" type="button">Action Grid</button>
+        <button data-layout="sunset" type="button">Sunset Edition</button>
+        <button data-layout="minimal" type="button">Minimal Crime</button>
+      </div>
+    </section>
 
-      <section class="card">
-        <h2>2 · Layout</h2>
-        <div class="btn-grid">
-          <button type="button" data-layout="classic" class="on">Classic Vice</button>
-          <button type="button" data-layout="duo">Duo Story</button>
-          <button type="button" data-layout="city">City Nights</button>
-          <button type="button" data-layout="grid">Action Grid</button>
-          <button type="button" data-layout="sunset">Sunset Edition</button>
-          <button type="button" data-layout="minimal">Minimal Crime</button>
-        </div>
-      </section>
+    <section class="panel">
+      <h2>3 · Grade</h2>
+      <div class="grid2">
+        <button data-grade="sunset" type="button">Vice City Sunset</button>
+        <button data-grade="neon" type="button">Neon Nights</button>
+        <button data-grade="tropical" type="button">Tropical Heat</button>
+        <button data-grade="crime" type="button">Crime Drama</button>
+      </div>
+    </section>
 
-      <section class="card">
-        <h2>3 · Grade</h2>
-        <div class="btn-grid">
-          <button type="button" data-grade="sunset" class="on">Vice City Sunset</button>
-          <button type="button" data-grade="neon">Neon Nights</button>
-          <button type="button" data-grade="tropical">Tropical Heat</button>
-          <button type="button" data-grade="crime">Crime Drama</button>
-        </div>
-      </section>
+    <section class="panel">
+      <h2>4 · Caption</h2>
+      <label>Title (max 24)
+        <input id="titleInput" type="text" maxlength="24" value="SUNSET HEIST">
+      </label>
+      <label>Subtitle (max 45)
+        <input id="subtitleInput" type="text" maxlength="45" value="A Vice City story in four panels">
+      </label>
+      <label>Micro line
+        <input id="microInput" type="text" value="VICE CITY · EST. 1986">
+      </label>
+      <div class="grid3">
+        <button data-pos="bottom" type="button">Bottom</button>
+        <button data-pos="top" type="button">Top</button>
+        <button data-pos="middle" type="button">Middle</button>
+      </div>
+      <div class="crop-row">
+        <button id="flipBtn" type="button">Flip panel</button>
+        <button id="resetCropBtn" type="button">Reset crop</button>
+      </div>
+      <p class="hint">Click a panel to select it. Drag to pan, scroll to zoom, double-click to reset its crop.</p>
+    </section>
 
-      <section class="card">
-        <h2>4 · Caption</h2>
-        <label>Title <span class="max">max 24</span>
-          <input id="titleInput" type="text" maxlength="24" value="SUNSET HEIST">
-        </label>
-        <label>Subtitle <span class="max">max 45</span>
-          <input id="subInput" type="text" maxlength="45" value="A Vice City story in four panels">
-        </label>
-        <label>Micro line
-          <input id="microInput" type="text" maxlength="60" value="VICE CITY  •  EST. 1986">
-        </label>
-        <div class="btn-grid">
-          <button type="button" data-pos="bottom" class="on">Bottom</button>
-          <button type="button" data-pos="top">Top</button>
-          <button type="button" data-pos="middle">Middle</button>
-        </div>
-      </section>
+    <section class="panel">
+      <h2>5 · Export</h2>
+      <div class="grid2">
+        <button id="export1080" type="button">PNG 1080×1080</button>
+        <button id="exportPortrait" type="button">PNG 1080×1350</button>
+        <button id="exportWide" type="button">PNG 1920×1080</button>
+        <button id="exportAll" class="primary" type="button">Export all sizes</button>
+      </div>
+    </section>
+  </aside>
+</main>
 
-      <section class="card">
-        <h2>5 · Selected panel crop</h2>
-        <p class="hint">Click a panel, drag to pan, scroll to zoom, double-click to reset.</p>
-        <div class="row">
-          <button id="flipBtn" type="button">Flip photo</button>
-          <button id="resetCropBtn" type="button">Reset crop</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <h2>6 · Export PNG</h2>
-        <div class="btn-grid">
-          <button id="expSquare" type="button" class="accent">1080 × 1080</button>
-          <button id="expPortrait" type="button" class="accent">1080 × 1350</button>
-          <button id="expWide" type="button" class="accent">1920 × 1080</button>
-          <button id="expAll" type="button">All three sizes</button>
-        </div>
-      </section>
-    </aside>
-  </main>
-</div>
 <script src="src/coverRender.js"></script>
 <script src="src/studio.js"></script>
 <script src="src/shots.js"></script>
